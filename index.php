@@ -2,7 +2,15 @@
 
 require_once "src/autoload.php";
 
-$db = new TestAH\Database();
+use TestAH\Database;
+use TestAH\Entities\Post;
+use TestAH\Helpers\ParserHtml;
+
+$db = Database::getInstance();
 $db->createTable();
 
-echo 'Hello World!!!';
+$posts = Post::getPostsByIdUser(1);
+
+if (!empty($posts)) {
+    $result = ParserHtml::parse($posts[0]['content']);
+}
