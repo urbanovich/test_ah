@@ -1,0 +1,96 @@
+version: '3'
+
+services:
+    test-ah-nginx:
+      image: nginx:latest
+      restart: always
+      container_name: test-ah-nginx
+      ports:
+        - "8080:80"
+        - "4431:443"
+      volumes:
+        - ../:/var/www/html/:delegated
+        - ./ssl/:/etc/ssl/
+        - ./nginx/conf.d:/etc/nginx/conf.d
+      links:
+        - test-ah-php7.2-fpm
+
+    test-ah-php7.2-fpm:
+      build: ./php-fpm/7.2.7/
+      container_name: test-ah-php7.2-fpm
+      restart: always
+      volumes:
+        - ../:/var/www/html/:delegated
+        - ./php-fpm/php-fpm.d/php.conf:/usr/local/etc/php-fpm.d/php.conf
+      links:
+        - test-ah-db
+#        - test-ah-elasticsearch
+#        - test-ah-redis
+#        - test-ah-memcached
+
+    test-ah-db:
+      image: mysql:5.7
+      restart: always
+      container_name: test-ah-db
+      environment:
+        MYSQL_ROOT_PASSWORD: 123456
+        MYSQL_USER: root
+        MYSQL_PASSWORD: 123456
+      volumes:
+        - ./databases:/var/lib/mysql
+
+    test-ah-phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      restart: always
+      container_name: test-ah-phpmyadmin
+      ports:
+        - "8888:80"
+      environment:
+        PMA_VERBOSE: test-ah-db
+        PMA_HOST: test-ah-db
+        MYSQL_ROOT_PASSWORD: 123456
+        MYSQL_USER: root
+        MYSQL_PASSWORD: 123456
+      links:
+        - test-ah-db
+
+#    test-ah-elasticsearch:
+#        image: elasticsearch:5
+#        container_name: test-ah-elasticsearch
+#        restart: always
+#        environment:
+#          - cluster.name=docker-cluster
+#          - bootstrap.memory_lock=true
+#          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#        volumes:
+#          - ./elasticsearch/data:/usr/share/elasticsearch/data
+#        ports:
+#          - "9200:9200"
+#
+#    test-ah-redis:
+#        image: redis
+#        command: ["redis-server", "--appendonly", "yes"]
+#        restart: always
+#        container_name: test-ah-redis
+#        ports:
+#          - "6379:6379"
+#        volumes:
+#          - ./redis/data:/data
+#
+#    test-ah-memcached:
+#        image: memcached
+#        restart: always
+#        container_name: test-ah-memcached
+#        ports:
+#          - "11211:11211"
+
+#    proxy-nginx:
+#      image: nginx:latest
+#      restart: always
+#      container_name: proxy-nginx
+#      ports:
+#        - "80:80"
+#        - "443:443"
+#      volumes:
+#        - ./proxy/conf.d:/etc/nginx/conf.d
+#        - ./ssl/:/etc/ssl/
