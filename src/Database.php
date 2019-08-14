@@ -2,7 +2,6 @@
 
 namespace TestAH;
 
-use mysql_xdevapi\Exception;
 
 class Database
 {
@@ -34,7 +33,6 @@ class Database
 
     public function createTable()
     {
-
         $data = [];
 
         $data[] = 'CREATE TABLE IF NOT EXISTS posts (' .
@@ -59,4 +57,40 @@ class Database
             }
         }
     }
+
+    public function execute($sql)
+    {
+        if (!$this->mysqli->query($sql)) {
+            if ($this->mysqli->errno) {
+                echo $this->mysqli->error;
+            }
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public function select($sql)
+    {
+        $res = $this->mysqli->query($sql);
+        if ($this->mysqli->errno) {
+            echo $this->mysqli->error;
+            return false;
+        }
+
+        $result = [];
+        $res->data_seek(0);
+        while ($row = $res->fetch_assoc()) {
+            $result[] = $row;
+        }
+
+        return $result;
+    }
+
+    public function __destruct()
+    {
+        $this->mysqli->close();
+    }
+
 }
