@@ -32,5 +32,31 @@ class Database
         return self::$instance;
     }
 
+    public function createTable()
+    {
 
+        $data = [];
+
+        $data[] = 'CREATE TABLE IF NOT EXISTS posts (' .
+            '`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, ' .
+            '`user_id` INT NOT NULL, ' .
+            '`title` VARCHAR(256) NOT NULL, ' .
+            '`content` TEXT(256), ' .
+            'INDEX post (`id`, `user_id`) ' .
+            ') ENGINE=MYISAM CHARACTER SET=utf8;';
+
+        $dir = dirname(__DIR__) . '/code.html';
+        $res = $this->mysqli->query('SELECT * FROM `posts`');
+        if (file_exists($dir) && !$res->num_rows) {
+            $data[] = 'INSERT INTO posts(user_id, title, content) VALUES (1, "title", "' . addslashes(file_get_contents($dir)). '");';
+        }
+
+        foreach ($data as $query) {
+            if (!$this->mysqli->query($query)) {
+                if ($this->mysqli->errno) {
+                    echo $this->mysqli->error;
+                }
+            }
+        }
+    }
 }
